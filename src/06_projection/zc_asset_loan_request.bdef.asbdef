@@ -1,0 +1,50 @@
+projection;
+strict ( 2 );
+use draft;
+
+define behavior for ZC_ASSET_LOAN_REQUEST alias Request
+use etag
+{
+  use create;
+  use update;
+  use delete;
+
+  use action Submit;
+  use action Approve;
+  use action Reject;
+  use action ReturnForCorrection;
+  use action Checkout;
+  use action Cancel;
+
+  use action Edit;
+  use action Activate;
+  use action Discard;
+  use action Resume;
+  use action Prepare;
+
+  use association _Items { create; with draft; }
+}
+
+define behavior for ZC_ASSET_LOAN_ITEM alias Item
+use etag
+{
+  use update;
+  use delete;
+
+  use action SetApprovedQuantity;
+  use action AssignAsset;
+
+  use association _Request { with draft; }
+  use association _Assignments { with draft; }
+}
+
+define behavior for ZC_ASSET_ASSIGNMENT alias Assignment
+use etag
+{
+  // read-only for the UI: changes only through actions
+  use action ReturnAsset;
+  use action ReportLost;
+
+  use association _Request { with draft; }
+  use association _Item { with draft; }
+}

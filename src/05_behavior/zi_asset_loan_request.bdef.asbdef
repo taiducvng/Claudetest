@@ -1,0 +1,177 @@
+managed with additional save implementation in class zbp_i_asset_loan_request unique;
+strict ( 2 );
+with draft;
+
+//====================================================================
+// ROOT: Loan Request
+//====================================================================
+define behavior for ZI_ASSET_LOAN_REQUEST alias Request
+persistent table zrap_asset_req_h
+draft table zrap_asset_rhd
+lock master
+total etag LocalLastChangedAt
+authorization master ( global, instance )
+etag master LocalLastChangedAt
+{
+  create;
+  update ( features : instance );
+  delete ( features : instance );
+  association _Items { create ( features : instance ); with draft; }
+
+  field ( numbering : managed, readonly ) RequestUUID;
+  field ( readonly ) RequestID, RequesterID, RequestDate, Status, ApproverID,
+                     RejectionReason, CorrectionReason, CheckoutDate, CompletionDate,
+                     CreatedBy, CreatedAt, LastChangedBy, LocalLastChangedAt;
+  field ( mandatory ) DepartmentID, LocationID, NeededFromDate, ExpectedReturnDate, Purpose;
+
+  // DET-001, DET-003, business ID
+  determination setDefaultValues  on modify { create; }
+  determination determineApprover on modify { field DepartmentID; }
+  determination setRequestId      on save   { create; }
+
+  // BR-003 + mandatory/master-data checks
+  validation validateDates  on save { create; field NeededFromDate, ExpectedReturnDate; }
+  validation validateHeader on save { create; field DepartmentID, LocationID, NeededFromDate, ExpectedReturnDate, Purpose; }
+
+  // ACT-001 .. ACT-004, ACT-007, ACT-010
+  action ( features : instance ) Submit                                                result [1] $self;
+  action ( features : instance ) Approve                                               result [1] $self;
+  action ( features : instance ) Reject              parameter ZA_ASSET_REJECT_PARAM   result [1] $self;
+  action ( features : instance ) ReturnForCorrection parameter ZA_ASSET_CORR_PARAM     result [1] $self;
+  action ( features : instance ) Checkout                                              result [1] $self;
+  action ( features : instance ) Cancel              parameter ZA_ASSET_CANCEL_PARAM   result [1] $self;
+
+  draft action ( features : instance ) Edit;
+  draft action Activate optimized;
+  draft action Discard;
+  draft action Resume;
+  draft determine action Prepare
+  {
+    validation validateDates;
+    validation validateHeader;
+    validation Item~validateQuantity;
+    validation Item~validateCategory;
+  }
+
+  mapping for zrap_asset_req_h
+  {
+    RequestUUID        = request_uuid;
+    RequestID          = request_id;
+    RequesterID        = requester_id;
+    DepartmentID       = department_id;
+    LocationID         = location_id;
+    RequestDate        = request_date;
+    NeededFromDate     = needed_from_date;
+    ExpectedReturnDate = expected_return_date;
+    Purpose            = purpose;
+    Status             = status;
+    ApproverID         = approver_id;
+    RejectionReason    = rejection_reason;
+    CorrectionReason   = correction_reason;
+    CheckoutDate       = checkout_date;
+    CompletionDate     = completion_date;
+    CreatedBy          = created_by;
+    CreatedAt          = created_at;
+    LastChangedBy      = last_changed_by;
+    LocalLastChangedAt = local_last_changed_at;
+  }
+}
+
+//====================================================================
+// CHILD: Requested Item
+//====================================================================
+define behavior for ZI_ASSET_LOAN_ITEM alias Item
+persistent table zrap_asset_req_i
+draft table zrap_asset_rid
+lock dependent by _Request
+authorization dependent by _Request
+etag master LocalLastChangedAt
+{
+  update;
+  delete;
+  association _Request { with draft; }
+  association _Assignments { create; with draft; }
+
+  field ( numbering : managed, readonly ) ItemUUID;
+  field ( readonly ) RequestUUID, ItemNumber, ApprovedQuantity, ItemStatus,
+                     CreatedBy, CreatedAt, LastChangedBy, LocalLastChangedAt;
+  field ( mandatory ) CategoryID, RequestedQuantity;
+
+  // DET-002, DET-003 (item side), DET-004 (quantity side)
+  determination setItemNumber             on modify { create; }
+  determination determineApproverFromItem on modify { create; field CategoryID; }
+  determination recalcOnQuantity          on modify { field ApprovedQuantity; }
+
+  // BR-002
+  validation validateQuantity on save { create; field RequestedQuantity; }
+  validation validateCategory on save { create; field CategoryID; }
+
+  // ACT-005, ACT-006
+  action ( features : instance ) SetApprovedQuantity parameter ZA_ASSET_QTY_PARAM    result [1] $self;
+  action ( features : instance ) AssignAsset         parameter ZA_ASSET_ASSIGN_PARAM result [1] $self;
+
+  mapping for zrap_asset_req_i
+  {
+    ItemUUID           = item_uuid;
+    RequestUUID        = request_uuid;
+    ItemNumber         = item_number;
+    CategoryID         = category_id;
+    RequestedQuantity  = requested_quantity;
+    ApprovedQuantity   = approved_quantity;
+    SpecialRequirement = special_requirement;
+    ItemStatus         = item_status;
+    CreatedBy          = created_by;
+    CreatedAt          = created_at;
+    LastChangedBy      = last_changed_by;
+    LocalLastChangedAt = local_last_changed_at;
+  }
+}
+
+//====================================================================
+// GRANDCHILD: Assigned Physical Asset
+//====================================================================
+define behavior for ZI_ASSET_ASSIGNMENT alias Assignment
+persistent table zrap_asset_asgn
+draft table zrap_asset_rad
+lock dependent by _Request
+authorization dependent by _Request
+etag master LocalLastChangedAt
+{
+  // update/delete are needed by the actions (EML). They are NOT exposed in
+  // the projection, so the UI can change assignments only through actions.
+  update;
+  delete;
+  association _Request { with draft; }
+  association _Item { with draft; }
+
+  field ( numbering : managed, readonly ) AssignmentUUID;
+  field ( readonly ) RequestUUID, ItemUUID, AssetUUID, AssignedBy, AssignedAt,
+                     CheckoutDate, ReturnDate, ReturnCondition, ReturnNote, AssignmentStatus,
+                     CreatedBy, CreatedAt, LastChangedBy, LocalLastChangedAt;
+
+  // DET-004 (assignment side)
+  determination updateRequestStatus on modify { create; field AssignmentStatus; }
+
+  // ACT-008, ACT-009
+  action ( features : instance ) ReturnAsset parameter ZA_ASSET_RETURN_PARAM result [1] $self;
+  action ( features : instance ) ReportLost  parameter ZA_ASSET_LOST_PARAM   result [1] $self;
+
+  mapping for zrap_asset_asgn
+  {
+    AssignmentUUID     = assignment_uuid;
+    RequestUUID        = request_uuid;
+    ItemUUID           = item_uuid;
+    AssetUUID          = asset_uuid;
+    AssignedBy         = assigned_by;
+    AssignedAt         = assigned_at;
+    CheckoutDate       = checkout_date;
+    ReturnDate         = return_date;
+    ReturnCondition    = return_condition;
+    ReturnNote         = return_note;
+    AssignmentStatus   = assignment_status;
+    CreatedBy          = created_by;
+    CreatedAt          = created_at;
+    LastChangedBy      = last_changed_by;
+    LocalLastChangedAt = local_last_changed_at;
+  }
+}

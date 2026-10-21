@@ -1,0 +1,83 @@
+@Metadata.layer: #CUSTOMER
+@UI: {
+  headerInfo: {
+    typeName: 'Assigned Asset',
+    typeNamePlural: 'Assigned Physical Assets',
+    title:       { type: #STANDARD, value: 'AssetID' },
+    description: { type: #STANDARD, value: 'AssetName' }
+  }
+}
+annotate entity ZC_ASSET_ASSIGNMENT with
+{
+  @UI.facet: [
+    { id: 'AssignmentDetails', type: #IDENTIFICATION_REFERENCE,
+      label: 'Assignment Details', position: 10 }
+  ]
+  @UI.hidden: true
+  AssignmentUUID;
+
+  @UI.hidden: true
+  RequestUUID;
+
+  @UI.hidden: true
+  ItemUUID;
+
+  @UI.hidden: true
+  AssetUUID;
+
+  @UI.lineItem: [
+    { position: 10, label: 'Asset ID' },
+    { type: #FOR_ACTION, dataAction: 'ReturnAsset', label: 'Return Asset' },
+    { type: #FOR_ACTION, dataAction: 'ReportLost',  label: 'Report Lost' }
+  ]
+  @UI.identification: [
+    { position: 10, label: 'Asset ID' },
+    { type: #FOR_ACTION, dataAction: 'ReturnAsset', label: 'Return Asset' },
+    { type: #FOR_ACTION, dataAction: 'ReportLost',  label: 'Report Lost' }
+  ]
+  AssetID;
+
+  @UI.lineItem:       [{ position: 20, label: 'Name' }]
+  @UI.identification: [{ position: 20, label: 'Asset Name' }]
+  AssetName;
+
+  @UI.lineItem:       [{ position: 30, label: 'Serial' }]
+  @UI.identification: [{ position: 30, label: 'Serial Number' }]
+  SerialNumber;
+
+  @UI.lineItem:       [{ position: 40, label: 'Status', criticality: 'AssignmentStatusCriticality' }]
+  @UI.identification: [{ position: 40, label: 'Assignment Status', criticality: 'AssignmentStatusCriticality' }]
+  @UI.textArrangement: #TEXT_ONLY
+  AssignmentStatus;
+
+  @UI.lineItem:       [{ position: 50, label: 'Checkout' }]
+  @UI.identification: [{ position: 50, label: 'Checkout Date' }]
+  CheckoutDate;
+
+  @UI.lineItem:       [{ position: 60, label: 'Return' }]
+  @UI.identification: [{ position: 60, label: 'Return Date' }]
+  ReturnDate;
+
+  @UI.lineItem:       [{ position: 70, label: 'Condition' }]
+  @UI.identification: [{ position: 70, label: 'Return Condition' }]
+  @UI.textArrangement: #TEXT_ONLY
+  ReturnCondition;
+
+  @UI.identification: [{ position: 80, label: 'Return Note' }]
+  ReturnNote;
+
+  @UI.identification: [{ position: 90, label: 'Assigned By' }]
+  AssignedBy;
+
+  @UI.identification: [{ position: 100, label: 'Assigned At' }]
+  AssignedAt;
+
+  @UI.hidden: true
+  AssignmentStatusText;
+
+  @UI.hidden: true
+  AssignmentStatusCriticality;
+
+  @UI.hidden: true
+  ReturnConditionText;
+}

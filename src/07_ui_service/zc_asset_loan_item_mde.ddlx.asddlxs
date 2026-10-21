@@ -1,0 +1,68 @@
+@Metadata.layer: #CUSTOMER
+@UI: {
+  headerInfo: {
+    typeName: 'Requested Item',
+    typeNamePlural: 'Requested Asset Items',
+    title:       { type: #STANDARD, value: 'ItemNumber' },
+    description: { type: #STANDARD, value: 'CategoryName' }
+  },
+  presentationVariant: [{ sortOrder: [{ by: 'ItemNumber', direction: #ASC }],
+                          visualizations: [{ type: #AS_LINEITEM }] }]
+}
+annotate entity ZC_ASSET_LOAN_ITEM with
+{
+  @UI.facet: [
+    { id: 'ItemDetails', type: #IDENTIFICATION_REFERENCE,
+      label: 'Item Details', position: 10 },
+    { id: 'Assignments', type: #LINEITEM_REFERENCE, targetElement: '_Assignments',
+      label: 'Assigned Physical Assets', position: 20 }
+  ]
+  @UI.hidden: true
+  ItemUUID;
+
+  @UI.hidden: true
+  RequestUUID;
+
+  @UI.lineItem: [
+    { position: 10, label: 'Item No.' },
+    { type: #FOR_ACTION, dataAction: 'SetApprovedQuantity', label: 'Set Approved Qty' },
+    { type: #FOR_ACTION, dataAction: 'AssignAsset',         label: 'Assign Asset' }
+  ]
+  @UI.identification: [
+    { position: 10, label: 'Item No.' },
+    { type: #FOR_ACTION, dataAction: 'SetApprovedQuantity', label: 'Set Approved Quantity' },
+    { type: #FOR_ACTION, dataAction: 'AssignAsset',         label: 'Assign Asset' }
+  ]
+  ItemNumber;
+
+  @UI.lineItem:       [{ position: 20, label: 'Category' }]
+  @UI.identification: [{ position: 20, label: 'Category' }]
+  CategoryID;
+
+  @UI.lineItem:       [{ position: 30, label: 'Requested Qty' }]
+  @UI.identification: [{ position: 30, label: 'Requested Quantity' }]
+  RequestedQuantity;
+
+  @UI.lineItem:       [{ position: 40, label: 'Approved Qty' }]
+  @UI.identification: [{ position: 40, label: 'Approved Quantity' }]
+  ApprovedQuantity;
+
+  @UI.lineItem:       [{ position: 50, label: 'Status' }]
+  @UI.identification: [{ position: 50, label: 'Item Status' }]
+  @UI.textArrangement: #TEXT_ONLY
+  ItemStatus;
+
+  @UI.lineItem:       [{ position: 60, label: 'Special Requirement' }]
+  @UI.identification: [{ position: 60, label: 'Special Requirement' }]
+  @UI.multiLineText: true
+  SpecialRequirement;
+
+  @UI.identification: [{ position: 70, label: 'Delivery Location' }]
+  RequestLocationID;
+
+  @UI.hidden: true
+  CategoryName;
+
+  @UI.hidden: true
+  ItemStatusText;
+}

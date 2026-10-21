@@ -1,0 +1,16 @@
+@EndUserText.label: 'Asset Loan & Return - UI Service'
+define service ZUI_ASSET_LOAN {
+  expose ZC_ASSET_LOAN_REQUEST  as LoanRequest;
+  expose ZC_ASSET_LOAN_ITEM     as LoanItem;
+  expose ZC_ASSET_ASSIGNMENT    as Assignment;
+
+  // value helps (sheet 09)
+  expose ZI_DEPARTMENT_VH       as DepartmentVH;
+  expose ZI_LOCATION_VH         as LocationVH;
+  expose ZI_ASSET_CATEGORY_VH   as CategoryVH;
+  expose ZI_AVAILABLE_ASSET_VH  as AvailableAssetVH;
+  expose ZI_ASSET_APPROVER_VH   as ApproverVH;
+  expose ZI_REQ_STATUS_VH       as RequestStatusVH;
+  expose ZI_RETURN_CONDITION_VH as ReturnConditionVH;
+  expose ZI_ASSET_STATUS_VH     as AssetStatusVH;
+}

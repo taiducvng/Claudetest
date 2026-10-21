@@ -1,0 +1,148 @@
+@Metadata.layer: #CUSTOMER
+@UI: {
+  headerInfo: {
+    typeName: 'Loan Request',
+    typeNamePlural: 'Loan Requests',
+    title:       { type: #STANDARD, value: 'RequestID' },
+    description: { type: #STANDARD, value: 'Purpose' }
+  },
+  presentationVariant: [{ sortOrder: [{ by: 'RequestID', direction: #DESC }],
+                          visualizations: [{ type: #AS_LINEITEM }] }]
+}
+annotate entity ZC_ASSET_LOAN_REQUEST with
+{
+  // ---------------- Object Page layout (sheet 11) ----------------
+  @UI.facet: [
+    { id: 'StatusHeader', purpose: #HEADER, type: #DATAPOINT_REFERENCE,
+      targetQualifier: 'StatusDP', position: 10 },
+    { id: 'General',  type: #FIELDGROUP_REFERENCE, targetQualifier: 'General',
+      label: 'General Request Information', position: 20 },
+    { id: 'Period',   type: #FIELDGROUP_REFERENCE, targetQualifier: 'Period',
+      label: 'Loan Period & Purpose', position: 30 },
+    { id: 'Approval', type: #FIELDGROUP_REFERENCE, targetQualifier: 'Approval',
+      label: 'Approval Information', position: 40 },
+    { id: 'Checkout', type: #FIELDGROUP_REFERENCE, targetQualifier: 'Checkout',
+      label: 'Checkout & Completion', position: 50 },
+    { id: 'Items',    type: #LINEITEM_REFERENCE, targetElement: '_Items',
+      label: 'Requested Asset Items', position: 60 },
+    { id: 'Admin',    type: #FIELDGROUP_REFERENCE, targetQualifier: 'Admin',
+      label: 'Administrative Information', position: 80 }
+  ]
+  @UI.hidden: true
+  RequestUUID;
+
+  // ---------------- List Report (sheet 10) + actions ----------------
+  @UI.lineItem: [
+    { position: 10, label: 'Request ID' },
+    { type: #FOR_ACTION, dataAction: 'Submit',   label: 'Submit' },
+    { type: #FOR_ACTION, dataAction: 'Approve',  label: 'Approve' },
+    { type: #FOR_ACTION, dataAction: 'Checkout', label: 'Checkout' }
+  ]
+  @UI.identification: [
+    { type: #FOR_ACTION, dataAction: 'Submit',              label: 'Submit',                position: 10 },
+    { type: #FOR_ACTION, dataAction: 'Approve',             label: 'Approve',               position: 20 },
+    { type: #FOR_ACTION, dataAction: 'Reject',              label: 'Reject',                position: 30 },
+    { type: #FOR_ACTION, dataAction: 'ReturnForCorrection', label: 'Return for Correction', position: 40 },
+    { type: #FOR_ACTION, dataAction: 'Checkout',            label: 'Checkout',              position: 50 },
+    { type: #FOR_ACTION, dataAction: 'Cancel',              label: 'Cancel Request',        position: 60 }
+  ]
+  @UI.selectionField: [{ position: 10 }]
+  @EndUserText.label: 'Loan Request ID'
+  RequestID;
+
+  @UI.lineItem:       [{ position: 20, label: 'Requester' }]
+  @UI.selectionField: [{ position: 20 }]
+  @UI.fieldGroup:     [{ qualifier: 'General', position: 10, label: 'Requester' }]
+  @EndUserText.label: 'Requester'
+  RequesterID;
+
+  @UI.selectionField: [{ position: 30 }]
+  @UI.fieldGroup:     [{ qualifier: 'General', position: 20, label: 'Department' }]
+  @EndUserText.label: 'Department'
+  DepartmentID;
+
+  @UI.lineItem: [{ position: 30, label: 'Department' }]
+  DepartmentName;
+
+  @UI.selectionField: [{ position: 40 }]
+  @UI.fieldGroup:     [{ qualifier: 'General', position: 30, label: 'Delivery Location' }]
+  @EndUserText.label: 'Location'
+  LocationID;
+
+  @UI.lineItem: [{ position: 40, label: 'Location' }]
+  LocationName;
+
+  @UI.fieldGroup: [{ qualifier: 'General', position: 40, label: 'Request Date' }]
+  RequestDate;
+
+  @UI.lineItem:       [{ position: 50, label: 'Needed From' }]
+  @UI.selectionField: [{ position: 50 }]
+  @UI.fieldGroup:     [{ qualifier: 'Period', position: 10, label: 'Needed From' }]
+  @Consumption.filter.selectionType: #INTERVAL
+  @EndUserText.label: 'Needed From'
+  NeededFromDate;
+
+  @UI.lineItem:       [{ position: 60, label: 'Expected Return' }]
+  @UI.selectionField: [{ position: 60 }]
+  @UI.fieldGroup:     [{ qualifier: 'Period', position: 20, label: 'Expected Return' }]
+  @Consumption.filter.selectionType: #INTERVAL
+  @EndUserText.label: 'Expected Return'
+  ExpectedReturnDate;
+
+  @UI.fieldGroup: [{ qualifier: 'Period', position: 30, label: 'Business Purpose' }]
+  @UI.multiLineText: true
+  Purpose;
+
+  @UI.lineItem: [{ position: 70, label: 'Requested Items' }]
+  RequestedItemCount;
+
+  @UI.lineItem: [{ position: 80, label: 'Assigned Assets' }]
+  AssignedAssetCount;
+
+  @UI.lineItem:       [{ position: 90, label: 'Status', criticality: 'StatusCriticality' }]
+  @UI.selectionField: [{ position: 70 }]
+  @UI.dataPoint:      { qualifier: 'StatusDP', title: 'Status', criticality: 'StatusCriticality' }
+  @UI.textArrangement: #TEXT_ONLY
+  @EndUserText.label: 'Status'
+  Status;
+
+  @UI.hidden: true
+  StatusText;
+
+  @UI.hidden: true
+  StatusCriticality;
+
+  @UI.selectionField: [{ position: 80 }]
+  @UI.fieldGroup:     [{ qualifier: 'Approval', position: 10, label: 'Approver' }]
+  @EndUserText.label: 'Approver'
+  ApproverID;
+
+  @UI.lineItem: [{ position: 100, label: 'Approver' }]
+  ApproverName;
+
+  @UI.fieldGroup: [{ qualifier: 'Approval', position: 20, label: 'Rejection / Cancel Reason' }]
+  @UI.multiLineText: true
+  RejectionReason;
+
+  @UI.fieldGroup: [{ qualifier: 'Approval', position: 30, label: 'Correction Reason' }]
+  @UI.multiLineText: true
+  CorrectionReason;
+
+  @UI.fieldGroup: [{ qualifier: 'Checkout', position: 10, label: 'Checkout Date' }]
+  CheckoutDate;
+
+  @UI.fieldGroup: [{ qualifier: 'Checkout', position: 20, label: 'Completion Date' }]
+  CompletionDate;
+
+  @UI.fieldGroup: [{ qualifier: 'Admin', position: 10, label: 'Created By' }]
+  CreatedBy;
+
+  @UI.fieldGroup: [{ qualifier: 'Admin', position: 20, label: 'Created At' }]
+  CreatedAt;
+
+  @UI.fieldGroup: [{ qualifier: 'Admin', position: 30, label: 'Last Changed By' }]
+  LastChangedBy;
+
+  @UI.fieldGroup: [{ qualifier: 'Admin', position: 40, label: 'Last Changed At' }]
+  LocalLastChangedAt;
+}
